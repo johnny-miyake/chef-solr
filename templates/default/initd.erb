@@ -4,54 +4,56 @@
 # Provides:          solr
 # Required-Start:   
 # Required-Stop:
-# Default-Start:     3 5
+# Default-Start:     3 5                                                                                                               
 # Default-Stop:      0 1 2 6
-# Short-Description: init script for solr search
-# Description:       init script for solr search
-### END INIT INFO
+# Short-Description: init script for solr search                                                                                       
+# Description:       init script for solr search                                                                                       
+### END INIT INFO                                                                                                                      
+                                                                                                                                       
+# source function library                                                                                                              
+. /lib/lsb/init-functions                                                                                                              
 
-# source function library
-. /etc/rc.d/init.d/functions
-
-PIDFILE=/var/run/solr.pid
-
+PIDFILE=/var/run/solr.pid                                                                                                              
+                                                                                                                                       
 LOG_FILE=/var/log/solr.log
 
-NAME="Solr"
-
-DESC="start/stop Solr Server"
+NAME="Solr"                                                                                                                            
+        
+DESC="start/stop Solr Server"                                                                                                          
+                                                                                                                                       
+DAEMON="/var/lib/solr.start"
 
 start() {
-    if [ -f $PIDFILE ]; then
-        PID=`cat $PIDFILE`
-        echo $NAME already running: $PID
-        exit 2;
+    if start-stop-daemon --stop --quiet --pidfile $PIDFILE --signal 0                                                                  
+    then                                                                                                                               
+        echo $NAME was already running: $PID                                                                                           
+        exit 2;                                                                                                                        
     else
-        action "Starting ${NAME}: " daemon --pidfile $PIDFILE /var/lib/solr.start
+        start-stop-daemon --start --pidfile $PIDFILE --exec $DAEMON                                                                    
     fi
-}
-
+}                                                                                                                                      
+        
 stop() {
-  action "Stopping ${NAME}: " killproc -p $PIDFILE
-}
-
-case $1 in
+        start-stop-daemon --stop --retry=TERM/30/KILL/5 --pidfile $PIDFILE                                                             
+}       
+        
+case $1 in      
     start)
-        start
-        ;;
-    stop)
-        stop
+        start   
+        ;;      
+    stop)                                                                                                                              
+        stop                                                                                                                           
         ;;
     restart)
-        stop
-        sleep 2
-        start
+        stop                                                                                                                           
+        sleep 2                                                                                                                        
+        start                                                                                                                          
         ;;
-    status)
-        status -p $PIDFILE solr
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|restart|status}" 
+    status)                                                                                                                            
+        status_of_proc -p $PIDFILE "$DAEMON" "$NAME" && exit 0 || exit $?                                                              
+        ;;                                                                                                                             
+    *)  
+        echo "Usage: $0 {start|stop|restart|status}"                                                                                   
         exit 3
         ;;
 esac
